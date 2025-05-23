@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Progress</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .container { max-width: 900px; margin: auto; }
+        .chart-container { width: 80%; margin: 20px auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 30px;}
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        h2, h3 { text-align: center; }
+        .nav-links { text-align: center; margin-bottom: 20px; }
+        .nav-links a { margin: 0 10px; text-decoration: none; color: #007bff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Your Skincare Progress</h2>
+        <div class="nav-links">
+            <a href="{{ url_for('user_profile') }}">Profile</a> |
+            <a href="{{ url_for('log_daily_entry') }}">Log New Entry</a>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <p style="color: {% if category == 'error' %}red{% elif category == 'success' %}green{% else %}black{% endif %}; text-align: center;">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <h3>Skin Condition Over Time</h3>
+        {% if skin_condition_logs and skin_condition_logs|length > 1 %}
+            <div class="chart-container">
+                <canvas id="skinRatingChart"></canvas>
+            </div>
+        {% elif skin_condition_logs and skin_condition_logs|length == 1 %}
+             <p style="text-align:center;">Not enough data to display a chart for skin condition (need at least 2 entries). Current rating: {{ skin_condition_logs[0].rating }}/5.</p>
+        {% else %}
+            <p style="text-align:center;">No skin condition data logged yet. <a href="{{ url_for('log_daily_entry') }}">Log your skin condition.</a></p>
+        {% endif %}
+        
+        <h3>Routine Adherence</h3>
+        {% if routine_adherence_logs and routine_adherence_logs|length > 0 %}
+            <div class="chart-container" style="width: 60%; margin-bottom: 40px;">
+                <canvas id="routineAdherenceChart"></canvas>
+            </div>
+        {% else %}
+            <p style="text-align:center;">No routine adherence data logged yet. <a href="{{ url_for('log_daily_entry') }}">Log your routine completion.</a></p>
+        {% endif %}
+
+        <h3>Detailed Skin Condition Logs</h3>
+        {% if skin_condition_logs %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Rating (1-5)</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in skin_condition_logs|reverse %}
+                    <tr>
+                        <td>{{ log.date }}</td>
+                        <td>{{ log.rating }}</td>
+                        <td>{{ log.notes }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+             <p style="text-align:center;">No skin condition data logged yet.</p>
+        {% endif %}
+
+        <h3>Detailed Routine Adherence Logs</h3>
+        {% if routine_adherence_logs %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>AM Completed</th>
+                        <th>PM Completed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in routine_adherence_logs|reverse %}
+                    <tr>
+                        <td>{{ log.date }}</td>
+                        <td>{{ 'Yes' if log.am_completed else 'No' }}</td>
+                        <td>{{ 'Yes' if log.pm_completed else 'No' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p style="text-align:center;">No routine adherence data logged yet.</p>
+        {% endif %}
+    </div>
+
+<script>
+    // Skin Rating Chart
+    const skinLogDates = {{ skin_log_dates|tojson }};
+    const skinLogRatings = {{ skin_log_ratings|tojson }};
+
+    if (skinLogDates && skinLogRatings && skinLogDates.length > 1) {
+        const skinCtx = document.getElementById('skinRatingChart').getContext('2d');
+        new Chart(skinCtx, {
+            type: 'line',
+            data: {
+                labels: skinLogDates,
+                datasets: [{
+                    label: 'Skin Rating (1-5)',
+                    data: skinLogRatings,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1,
+                    fill: false
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: false, // Skin rating doesn't start at 0
+                        min: 1,
+                        max: 5,
+                        ticks: { stepSize: 1 }
+                    }
+                },
+                responsive: true,
+                maintainAspectRatio: true
+            }
+        });
+    }
+
+    // Routine Adherence Chart (Bar chart for completion counts)
+    const adherenceDates = {{ adherence_log_dates|tojson }};
+    const amCompletedCounts = {{ adherence_am_counts|tojson }};
+    const pmCompletedCounts = {{ adherence_pm_counts|tojson }};
+
+    if (adherenceDates && amCompletedCounts && pmCompletedCounts && adherenceDates.length > 0) {
+        const adherenceCtx = document.getElementById('routineAdherenceChart').getContext('2d');
+        new Chart(adherenceCtx, {
+            type: 'bar',
+            data: {
+                labels: adherenceDates,
+                datasets: [
+                    {
+                        label: 'AM Routine Completed',
+                        data: amCompletedCounts,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'PM Routine Completed',
+                        data: pmCompletedCounts,
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 1, // Representing True (1) or False (0)
+                        ticks: {
+                            stepSize: 1,
+                            callback: function(value) { return value == 1 ? 'Yes' : 'No';}
+                        }
+                    }
+                },
+                responsive: true,
+                maintainAspectRatio: true
+            }
+        });
+    }
+</script>
+</body>
+</html>

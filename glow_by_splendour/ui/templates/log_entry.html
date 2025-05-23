@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Log Daily Progress</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .form-container { max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        label { display: block; margin-top: 15px; font-weight: bold; }
+        input[type="date"], input[type="number"], textarea, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        input[type="checkbox"] { margin-right: 5px; }
+        .checkbox-group label { font-weight: normal; display: inline; }
+        input[type="submit"] {
+            background-color: #007bff; color: white; padding: 10px 15px; border: none;
+            border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 20px;
+        }
+        input[type="submit"]:hover { background-color: #0056b3; }
+        .flash-messages p { padding: 10px; border-radius: 4px; }
+        .flash-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;}
+        .flash-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;}
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Log Your Progress</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                {% for category, message in messages %}
+                    <p class="flash-{{ category }}">{{ message }}</p>
+                {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form method="post">
+            <label for="log_date">Date:</label>
+            <input type="date" id="log_date" name="log_date" value="{{ today_date }}" required>
+
+            <h4>Routine Adherence</h4>
+            <div class="checkbox-group">
+                <input type="checkbox" id="am_completed" name="am_completed" value="true" {% if entry_data.am_completed %}checked{% endif %}>
+                <label for="am_completed">AM Routine Completed</label>
+            </div>
+            <br>
+            <div class="checkbox-group">
+                <input type="checkbox" id="pm_completed" name="pm_completed" value="true" {% if entry_data.pm_completed %}checked{% endif %}>
+                <label for="pm_completed">PM Routine Completed</label>
+            </div>
+
+            <h4>Skin Condition</h4>
+            <label for="rating">Skin Rating (1-5):</label>
+            <input type="number" id="rating" name="rating" min="1" max="5" value="{{ entry_data.rating if entry_data.rating > 0 else '' }}" required>
+            
+            <label for="notes">Notes:</label>
+            <textarea id="notes" name="notes" rows="4">{{ entry_data.notes }}</textarea>
+
+            <input type="submit" value="Save Log">
+        </form>
+        <p><a href="{{ url_for('user_profile') }}">Back to Profile</a> | <a href="{{ url_for('view_progress') }}">View Progress</a></p>
+    </div>
+</body>
+</html>

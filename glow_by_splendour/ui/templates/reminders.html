@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Set Reminders</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .container { max-width: 500px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        label { display: block; margin-top: 15px; font-weight: bold; }
+        input[type="time"], input[type="checkbox"] {
+            margin-top: 5px;
+        }
+        input[type="time"] { padding: 5px; border-radius: 4px; border: 1px solid #ddd; }
+        input[type="submit"] {
+            background-color: #007bff; color: white; padding: 10px 15px; border: none;
+            border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 20px;
+        }
+        input[type="submit"]:hover { background-color: #0056b3; }
+        .reminder-group { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee;}
+        .reminder-group:last-child { border-bottom: none; }
+        .flash-messages p { padding: 10px; border-radius: 4px; }
+        .flash-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;}
+        .nav-links { text-align: center; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Set Your Skincare Reminders</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                {% for category, message in messages %}
+                    <p class="flash-{{ category }}">{{ message }}</p>
+                {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form method="post">
+            <div class="reminder-group">
+                <h3>AM Reminder</h3>
+                <label for="am_reminder_time">Time (HH:MM):</label>
+                <input type="time" id="am_reminder_time" name="am_reminder_time" value="{{ reminders.AM.reminder_time if reminders.AM else '' }}">
+                <br>
+                <input type="checkbox" id="am_is_active" name="am_is_active" value="true" {% if reminders.AM and reminders.AM.is_active %}checked{% endif %}>
+                <label for="am_is_active">Enable AM Reminder</label>
+            </div>
+
+            <div class="reminder-group">
+                <h3>PM Reminder</h3>
+                <label for="pm_reminder_time">Time (HH:MM):</label>
+                <input type="time" id="pm_reminder_time" name="pm_reminder_time" value="{{ reminders.PM.reminder_time if reminders.PM else '' }}">
+                <br>
+                <input type="checkbox" id="pm_is_active" name="pm_is_active" value="true" {% if reminders.PM and reminders.PM.is_active %}checked{% endif %}>
+                <label for="pm_is_active">Enable PM Reminder</label>
+            </div>
+            
+            <input type="submit" value="Save Reminders">
+        </form>
+        <div class="nav-links">
+            <p><a href="{{ url_for('user_profile') }}">Back to Profile</a></p>
+        </div>
+    </div>
+</body>
+</html>

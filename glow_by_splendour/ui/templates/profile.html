@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Profile</title>
+    <style>
+        .badges-container { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px; }
+        .badge { text-align: center; font-size: 0.9em; }
+        .badge img { border: 1px solid #eee; border-radius: 50%; padding: 5px; }
+    </style>
+</head>
+<body>
+    <h2>Welcome, {{ username }}!</h2>
+    <p>This is your profile page.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <p style="color: {% if category == 'error' %}red{% elif category == 'success' %}green{% else %}black{% endif %};">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if skin_type %}
+        <p><strong>Your determined skin type is: {{ skin_type }}</strong>. <a href="{{ url_for('take_quiz') }}">Retake Skin Type Quiz</a></p>
+    {% else %}
+        <p>You haven't taken the skin type quiz yet.</p>
+        <p><a href="{{ url_for('take_quiz') }}">Take Skin Type Quiz</a></p>
+    {% endif %}
+
+    <p><a href="{{ url_for('view_routines') }}">View/Manage Your Skincare Routines</a></p>
+    <p><a href="{{ url_for('log_daily_entry') }}">Log Daily Progress</a></p>
+    <p><a href="{{ url_for('view_progress') }}">View Skincare Progress</a></p>
+    <p><a href="{{ url_for('manage_reminders') }}">Set Skincare Reminders</a></p>
+    <p><a href="{{ url_for('education_hub_main') }}">Skincare Education Hub</a></p>
+    <p><a href="{{ url_for('view_hydration_challenge') }}">7-Day Hydration Glow-Up Challenge</a></p>
+
+    <h4>Your Badges:</h4>
+    {% if user_badges and user_badges|length > 0 %}
+        <div class="badges-container">
+            {% for badge in user_badges %}
+            <div class="badge">
+                <img src="{{ badge.image_url }}" alt="{{ badge.badge_name }}" title="{{ badge.badge_name }} - Awarded: {{ badge.date_awarded }}" width="80">
+                <p>{{ badge.badge_name }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No badges earned yet. Try completing a challenge!</p>
+    {% endif %}
+
+    <p><a href="{{ url_for('logout') }}">Logout</a></p>
+</body>
+</html>

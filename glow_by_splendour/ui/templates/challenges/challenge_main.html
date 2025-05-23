@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>7-Day Hydration Glow-Up Challenge</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background-color: #f9f9f9; }
+        .container { max-width: 800px; margin: auto; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
+        h1, h2 { text-align: center; color: #333; }
+        .challenge-intro { text-align: center; margin-bottom: 20px; }
+        .day-card { border: 1px solid #ddd; border-radius: 5px; padding: 15px; margin-bottom: 15px; background-color: #fff; }
+        .day-card h3 { margin-top: 0; color: #0056b3; }
+        .day-card p { margin-bottom: 5px; }
+        .day-card .tip { font-style: italic; color: #555; font-size: 0.9em; }
+        .day-card .status { font-weight: bold; }
+        .status-completed { color: green; }
+        .status-pending { color: orange; }
+        .completion-form button {
+            padding: 8px 12px; background-color: #28a745; color: white; border: none;
+            border-radius: 4px; cursor: pointer; font-size: 0.9em;
+        }
+        .completion-form button:hover { background-color: #218838; }
+        .completion-form button.unmark { background-color: #dc3545; }
+        .completion-form button.unmark:hover { background-color: #c82333; }
+        .badge-notification {
+            text-align: center; padding: 10px; background-color: #d1ecf1; color: #0c5460;
+            border: 1px solid #bee5eb; border-radius: 5px; margin-top: 20px;
+        }
+        .nav-links { text-align: center; margin-top: 20px; }
+        .nav-links a { text-decoration: none; color: #007bff; margin: 0 10px;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>7-Day Hydration Glow-Up Challenge</h1>
+        <div class="nav-links">
+            <a href="{{ url_for('user_profile') }}">Profile</a>
+        </div>
+
+        <div class="challenge-intro">
+            <p>Join our 7-day challenge to boost your skin's hydration and achieve a healthy glow! Complete daily tasks and learn useful tips along the way.</p>
+            {% if badge_awarded_just_now %}
+            <div class="badge-notification">
+                <h4>Congratulations!</h4>
+                <p>You've completed the 7-Day Hydration Glow-Up Challenge and earned the <strong>{{ badge_name }}</strong> badge!</p>
+                <img src="{{ url_for('static', filename='images/badges/hydration_champion_badge.png') }}" alt="{{ badge_name }}" width="100">
+            </div>
+            {% endif %}
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <p style="color: {% if category == 'error' %}red{% elif category == 'success' %}green{% else %}black{% endif %}; text-align: center;">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <h2>Challenge Days</h2>
+        {% for day_task in challenge_details %}
+        <div class="day-card">
+            <h3>Day {{ day_task.day_number }}: {{ day_task.task_description }}</h3>
+            <p class="tip"><strong>Tip:</strong> {{ day_task.educational_tip }}</p>
+            <p class="status">
+                Status: 
+                {% if user_progress.get(day_task.day_number) and user_progress.get(day_task.day_number).completed_status %}
+                    <span class="status-completed">Completed (on {{ user_progress.get(day_task.day_number).date_completed }})</span>
+                {% else %}
+                    <span class="status-pending">Pending</span>
+                {% endif %}
+            </p>
+            <form class="completion-form" method="post" action="{{ url_for('log_hydration_challenge_day', day_number=day_task.day_number) }}">
+                {% if user_progress.get(day_task.day_number) and user_progress.get(day_task.day_number).completed_status %}
+                    <input type="hidden" name="completed_status" value="false"> <!-- To unmark -->
+                    <button type="submit" class="unmark">Unmark as Complete</button>
+                {% else %}
+                    <input type="hidden" name="completed_status" value="true"> <!-- To mark -->
+                    <button type="submit">Mark as Complete</button>
+                {% endif %}
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

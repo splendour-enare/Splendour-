@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Skin Type Quiz</title>
+</head>
+<body>
+    <h2>Skin Type Quiz</h2>
+    <p>Answer the following questions to help us determine your skin type.</p>
+    
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    <form method="post">
+        {% for question in questions %}
+        <div>
+            <p><strong>{{ loop.index }}. {{ question.text }}</strong></p>
+            {% for option_key, option_text in question.options.items() %}
+            <input type="radio" id="{{ question.id }}_{{ option_key }}" name="{{ question.id }}" value="{{ option_key }}" required>
+            <label for="{{ question.id }}_{{ option_key }}">{{ option_text }}</label><br>
+            {% endfor %}
+        </div>
+        <br>
+        {% endfor %}
+        <input type="submit" value="Submit Answers">
+    </form>
+    <p><a href="{{ url_for('user_profile') }}">Back to Profile</a></p>
+</body>
+</html>

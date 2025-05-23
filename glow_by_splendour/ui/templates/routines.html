@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Skincare Routines</title>
+    <style>
+        .routine-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .routine-section h3 {
+            margin-top: 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #eee;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f7f7f7;
+        }
+        .warnings {
+            color: orange;
+            font-size: 0.9em;
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+        .no-warnings {
+            color: green;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <h2>Your Skincare Routines</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <p style="color: {% if category == 'error' %}red{% elif category == 'success' %}green{% else %}black{% endif %};">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if not skin_type %}
+        <p>Please <a href="{{ url_for('take_quiz') }}">take the skin type quiz</a> first to get personalized routine suggestions.</p>
+    {% else %}
+        <p>Your determined skin type: <strong>{{ skin_type }}</strong>. <a href="{{ url_for('take_quiz') }}">Retake Quiz</a></p>
+        
+        <div class="routine-section">
+            <h3>Suggested AM Routine (for {{ skin_type }})</h3>
+            {% if generated_am_routine and generated_am_routine|length > 0 %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Step</th>
+                            <th>Product</th>
+                            <th>Brand</th>
+                            <th>Ingredient Warnings</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for step in generated_am_routine %}
+                        <tr>
+                            <td>{{ step.step_name }}</td>
+                            <td>{{ step.product_name }}</td>
+                            <td>{{ step.brand }}</td>
+                            <td>
+                                {% if step.warnings and step.warnings|length > 0 %}
+                                    <ul class="warnings">
+                                        {% for warning in step.warnings %}
+                                            <li>{{ warning }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% elif step.product_id %}
+                                     <p class="no-warnings">No specific warnings for your skin type.</p>
+                                {% else %}
+                                    <p>{{ step.warnings[0] if step.warnings else "N/A" }}</p> <!-- For "Could not find product" message -->
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>Could not generate an AM routine for your skin type at this moment. This might be due to missing product definitions for your skin type or required categories.</p>
+            {% endif %}
+        </div>
+
+        <div class="routine-section">
+            <h3>Suggested PM Routine (for {{ skin_type }})</h3>
+            {% if generated_pm_routine and generated_pm_routine|length > 0 %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Step</th>
+                            <th>Product</th>
+                            <th>Brand</th>
+                            <th>Ingredient Warnings</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for step in generated_pm_routine %}
+                        <tr>
+                            <td>{{ step.step_name }}</td>
+                            <td>{{ step.product_name }}</td>
+                            <td>{{ step.brand }}</td>
+                            <td>
+                                {% if step.warnings and step.warnings|length > 0 %}
+                                     <ul class="warnings">
+                                        {% for warning in step.warnings %}
+                                            <li>{{ warning }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% elif step.product_id %}
+                                     <p class="no-warnings">No specific warnings for your skin type.</p>
+                                {% else %}
+                                     <p>{{ step.warnings[0] if step.warnings else "N/A" }}</p> <!-- For "Could not find product" message -->
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>Could not generate a PM routine for your skin type at this moment. This might be due to missing product definitions for your skin type or required categories.</p>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <!-- Display Saved Routines (no ingredient check for these in this step) -->
+    <div class="routine-section">
+        <h3>Your Saved Routines</h3>
+        {% if saved_routines and saved_routines|length > 0 %}
+            {% for routine_name, times in saved_routines.items() %}
+                <h4>{{ routine_name }}</h4>
+                {% for time_of_day, steps in times.items() %}
+                    <h5>{{ time_of_day }}</h5>
+                    {% if steps %}
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Step</th>
+                                    <th>Product</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for step in steps %}
+                                <tr>
+                                    <td>{{ step.step_name }}</td>
+                                    <td>{{ step.product_name }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p>No steps found for this routine.</p>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        {% else %}
+            <p>You have no saved routines yet.</p>
+        {% endif %}
+    </div>
+
+    <p><a href="{{ url_for('user_profile') }}">Back to Profile</a></p>
+</body>
+</html>

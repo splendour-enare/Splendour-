@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ article.title if article else "Article Not Found" }} - Education Hub</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background-color: #f9f9f9; line-height: 1.6; }
+        .container { max-width: 800px; margin: auto; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
+        h1 { color: #333; }
+        .article-content { margin-top: 20px; color: #444; }
+        .article-content p { margin-bottom: 1em; }
+        .article-content ul { margin-left: 20px; margin-bottom: 1em; }
+        .article-content strong { color: #222; }
+        .tags { margin-top: 30px; font-size: 0.9em; color: #777; }
+        .tags span { background-color: #e9ecef; padding: 3px 6px; border-radius: 3px; margin-right: 5px; }
+        .nav-links { margin-top: 20px; }
+        .nav-links a { text-decoration: none; color: #007bff; margin-right: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% if article %}
+            <h1>{{ article.title }}</h1>
+            <div class="article-content">
+                {{ article.content|safe }} {# Use |safe filter as content contains HTML #}
+            </div>
+            <div class="tags">
+                <strong>Tags:</strong> 
+                {% for tag in article.tags %}
+                    <span>{{ tag }}</span>
+                {% endfor %}
+            </div>
+        {% else %}
+            <h1>Article Not Found</h1>
+            <p>Sorry, the article you are looking for does not exist.</p>
+        {% endif %}
+        <div class="nav-links">
+            <a href="{{ url_for('education_hub') }}">Back to Education Hub</a> |
+            <a href="{{ url_for('user_profile') }}">Profile</a>
+        </div>
+    </div>
+</body>
+</html>

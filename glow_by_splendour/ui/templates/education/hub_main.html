@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Education Hub</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background-color: #f9f9f9; }
+        .container { max-width: 800px; margin: auto; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
+        h1 { text-align: center; color: #333; }
+        .search-container { margin-bottom: 20px; text-align: center; }
+        .search-container input[type="search"] { padding: 10px; width: 60%; border-radius: 4px; border: 1px solid #ddd; }
+        .search-container input[type="submit"] { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .article-list { list-style-type: none; padding: 0; }
+        .article-item { background-color: #fff; border: 1px solid #eee; padding: 15px; margin-bottom: 10px; border-radius: 5px; }
+        .article-item h3 { margin-top: 0; }
+        .article-item h3 a { text-decoration: none; color: #0056b3; }
+        .article-item p { color: #555; font-size: 0.95em; }
+        .article-item .tags { font-size: 0.85em; color: #777; }
+        .article-item .tags span { background-color: #e9ecef; padding: 3px 6px; border-radius: 3px; margin-right: 5px; }
+        .no-articles { text-align: center; color: #777; }
+        .nav-links { text-align: center; margin-bottom: 20px; }
+        .nav-links a { margin: 0 10px; text-decoration: none; color: #007bff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Skincare Education Hub</h1>
+        <div class="nav-links">
+            <a href="{{ url_for('user_profile') }}">Profile</a>
+        </div>
+
+        <div class="search-container">
+            <form method="get" action="{{ url_for('education_hub') }}">
+                <input type="search" name="search" placeholder="Search articles (e.g., sunscreen, acne, ingredients)..." value="{{ search_query if search_query else '' }}">
+                <input type="submit" value="Search">
+            </form>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <p style="color: {% if category == 'error' %}red{% elif category == 'success' %}green{% else %}black{% endif %}; text-align: center;">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <ul class="article-list">
+            {% if articles and articles|length > 0 %}
+                {% for article in articles %}
+                <li class="article-item">
+                    <h3><a href="{{ url_for('view_article', article_id=article.article_id) }}">{{ article.title }}</a></h3>
+                    <p>{{ article.summary }}</p>
+                    <div class="tags">
+                        <strong>Tags:</strong> 
+                        {% for tag in article.tags %}
+                            <span>{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                </li>
+                {% endfor %}
+            {% else %}
+                <p class="no-articles">No articles found matching your criteria. Try a different search term or <a href="{{ url_for('education_hub') }}">view all articles</a>.</p>
+            {% endif %}
+        </ul>
+    </div>
+</body>
+</html>
